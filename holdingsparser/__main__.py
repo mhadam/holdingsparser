@@ -1,9 +1,7 @@
 import sys
-import holdingsparser
+from . import holdingsparser
 
 def main(args=None):
-    """The main routine."""
-    print(sys.path)
     if args is None:
         args = sys.argv[1:]
 
@@ -40,9 +38,9 @@ def main(args=None):
         print(holdings_document_url + "\n")
 
     # parse the holdings document and convert into TSV data
-    
     try:
-        tsv_data = holdingsparser.parse_holdings_document(holdings_document_url, './holdingsparser/13F-HR.xsl')
+        xsl_file = "./xslfiles/13F-HR.xsl"
+        tsv_data = holdingsparser.parse_holdings_document(holdings_document_url, xsl_file)
     except:
         print("Encountered problem parsing holdings document.")
 
