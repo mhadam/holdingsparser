@@ -56,4 +56,4 @@ WASTE MGMT INC DEL	COM	94106L109	1234853	18633672	SH	SOLE	18633672	0	0
 ```
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
