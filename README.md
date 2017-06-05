@@ -14,7 +14,7 @@ The code was developed with Python 3.5.2 on Ubuntu 16.04. There's a requirements
 
 First install the libraries from the requirements.txt file (otherwise install the libraries on your own):
 ```
-pip install -r quovo-challenge/requirements.txt
+pip install -r holdingsparser/requirements.txt
 ```
 
 The project can then be run with:
