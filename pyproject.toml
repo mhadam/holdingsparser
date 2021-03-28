@@ -4,11 +4,19 @@ version = "0.1.0"
 description = "A program that parses 13F reports filed with the SEC."
 authors = ["mhadam <michael@hadam.us>"]
 license = "MIT License"
+packages = [
+    { include = "holdingsparser" },
+]
+include = ["xslfiles/13F-HR.xsl"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+beautifulsoup4 = "^4.9.3"
+lxml = "^4.6.3"
+requests = "^2.25.1"
 
 [tool.poetry.dev-dependencies]
+pytest = "^6.2.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
