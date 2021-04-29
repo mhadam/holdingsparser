@@ -80,7 +80,7 @@ def find_holdings_document_url(soup: BeautifulSoup) -> Optional[str]:
     )
     try:
         return any_information_table_xml_link["href"]
-    except KeyError:
+    except (TypeError, KeyError):
         raise RuntimeError("failed to find holdings document URL")
 
 
@@ -104,5 +104,5 @@ def get_filings_url(soup: BeautifulSoup) -> str:
     download_element = get_filings_download_element(soup, "13F-HR", "holdings")
     try:
         return "http://www.sec.gov" + download_element["href"]
-    except KeyError:
+    except (TypeError, KeyError):
         raise RuntimeError(f"no filings found")
