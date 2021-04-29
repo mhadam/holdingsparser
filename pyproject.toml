@@ -1,13 +1,18 @@
 [tool.poetry]
 name = "holdingsparser"
-version = "0.1.0"
+version = "0.1.0-alpha.6"
 description = "A program that parses 13F reports filed with the SEC."
 authors = ["mhadam <michael@hadam.us>"]
+repository = "https://github.com/mhadam/holdingsparser"
+readme = "README.rst"
 license = "MIT License"
 packages = [
     { include = "holdingsparser" },
 ]
 include = ["xslfiles/13F-HR.xsl"]
+
+[tool.poetry.scripts]
+holdingsparser = 'holdingsparser.__main__:main'
 
 [tool.poetry.dependencies]
 python = "^3.9"

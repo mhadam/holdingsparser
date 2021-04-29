@@ -19,17 +19,17 @@ def run(term: str):
 
     # retrieve holdings document and transform to TSV
     holdings_document = requests.get(holdings_document_url)
-    holdings_document_soup = BeautifulSoup(holdings_document.text, 'lxml')
+    holdings_document_soup = BeautifulSoup(holdings_document.text, "lxml")
 
     information_table = get_cleaned_information_table(holdings_document_soup)
     xsl_file_path = Path(__file__).parent.parent / "xslfiles/13F-HR.xsl"
-    with open(xsl_file_path, 'r') as xsl_file:
+    with open(xsl_file_path, "r") as xsl_file:
         parsed_xsl = et.parse(xsl_file)
         xslt = et.XSLT(parsed_xsl)
     dom = et.fromstring(information_table)
     transformed_information_table = xslt(dom)
 
     # write TSV file
-    with open(f'{term}_holdings.tsv', 'w') as tsvfile:
+    with open(f"{term}_holdings.tsv", "w") as tsvfile:
         tsvfile.write(str(transformed_information_table))
     print(str(transformed_information_table))
