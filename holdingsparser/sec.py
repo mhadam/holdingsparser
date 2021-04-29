@@ -24,6 +24,4 @@ def get_holdings_document_url(filings_url: str) -> str:
     filings_page = requests.get(filings_url)
     filings_page_soup = BeautifulSoup(filings_page.text, "html.parser")
     holdings_document_url = find_holdings_document_url(filings_page_soup)
-    if not holdings_document_url:
-        raise RuntimeError(f"no holdings document found")
     return holdings_document_url

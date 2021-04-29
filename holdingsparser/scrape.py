@@ -78,8 +78,10 @@ def find_holdings_document_url(soup: BeautifulSoup) -> Optional[str]:
     any_information_table_xml_link = soup.find(
         "a", string=re.compile(r".+informationtable\.xml$")
     )
-    if any_information_table_xml_link:
-        return any_information_table_xml_link.get("href")
+    try:
+        return any_information_table_xml_link["href"]
+    except KeyError:
+        raise RuntimeError("failed to find holdings document URL")
 
 
 def get_cleaned_information_table(soup: BeautifulSoup) -> str:

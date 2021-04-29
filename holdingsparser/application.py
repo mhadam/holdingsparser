@@ -32,4 +32,4 @@ def run(term: str):
     # write TSV file
     with open(f"{term}_holdings.tsv", "w") as tsvfile:
         tsvfile.write(str(transformed_information_table))
-    print(str(transformed_information_table))
+    print(str(transformed_information_table), end="")
