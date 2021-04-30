@@ -17,6 +17,9 @@ def search(term: str):
     filings_url = get_filings_url(term)
     logger.info(f"filings url is {filings_url}")
 
+    if filings_url is None:
+        raise RuntimeError("failed to get filings URL")
+
     # find holdings document url
     holdings_document_url = get_holdings_document_url(filings_url)
     logger.info(f"holdings document url is {holdings_document_url}")
