@@ -12,7 +12,7 @@ from holdingsparser.sec import get_holdings_document_url
 logger = logging.getLogger(__name__)
 
 
-def run(term: str):
+def search(term: str):
     # find 13F-HR filings
     filings_url = get_filings_url(term)
     logger.info(f"filings url is {filings_url}")

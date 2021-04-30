@@ -4,9 +4,12 @@ import sys
 import typer
 import requests_random_user_agent  # NOTE: this enables random user agents
 
-from holdingsparser.application import run
+from holdingsparser.application import search
 
 logger = logging.getLogger(__name__)
+
+
+app = typer.Typer()
 
 
 def configure_logging(verbose: int):
@@ -16,7 +19,8 @@ def configure_logging(verbose: int):
     )
 
 
-def main(
+@app.command()  # only entrypoint for Typer now
+def main_command(
     term: str = typer.Argument(..., help="Name, ticker or CIK"),
     verbose: int = typer.Option(0, "--verbose", "-v", count=True),
 ):
@@ -24,7 +28,7 @@ def main(
         configure_logging(verbose)
     logger.debug(f"{verbose=}")
     try:
-        run(term)
+        search(term)
     except RuntimeError as e:
         if verbose:
             logging.exception(str(e))
@@ -33,5 +37,9 @@ def main(
         sys.exit(2)
 
 
+def main():
+    app()
+
+
 if __name__ == "__main__":
-    typer.run(main)
+    main()
