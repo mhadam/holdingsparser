@@ -1,8 +1,14 @@
+import json
+import logging
 import re
 from itertools import chain
+from json import JSONDecodeError
 from typing import Iterable, Optional
 
+import requests
 from bs4 import BeautifulSoup, PageElement, Tag
+
+logger = logging.getLogger(__name__)
 
 
 def get_elements_from_soup(
@@ -47,39 +53,17 @@ def get_filings_download_element(
         return results_table.find(
             lambda x: filter_search_results_entries(x, form, description)
         )
-    except AttributeError:
+    except (TypeError, AttributeError):
         pass
 
 
 def find_holdings_document_url(soup: BeautifulSoup) -> Optional[str]:
-    # given holding page,
-    # select the appropriate holding document format
-    def is_information_table_and_xml_entry(tag):
-        """Returns true if the tag is a link in the same row as an xml file
-        and the phrase 'information table'"""
-        xml_re = re.compile(r"^.+\.xml$", re.I)
-        info_re = re.compile("information table", re.I)
-        try:
-            return (
-                tag.parent.parent.parent.name == "table"
-                and tag.name == "a"
-                and xml_re.match(tag.string)
-                and tag.parent.parent.find(string=info_re)
-            )
-        except AttributeError:
-            return False
-
-    # search for specific element with xml file link
-    information_table_xml_entry = soup.find(is_information_table_and_xml_entry)
-    if information_table_xml_entry:
-        return "http://www.sec.gov" + information_table_xml_entry.get("href")
-
     # search entire soup for link to xml file
     any_information_table_xml_link = soup.find(
-        "a", string=re.compile(r".+informationtable\.xml$")
+        "a", string=re.compile(r"^.+informationtable\.xml$")
     )
     try:
-        return any_information_table_xml_link["href"]
+        return "https://www.sec.gov" + any_information_table_xml_link["href"]
     except (TypeError, KeyError):
         raise RuntimeError("failed to find holdings document URL")
 
@@ -100,9 +84,22 @@ def get_cleaned_information_table(soup: BeautifulSoup) -> str:
     return information_table_soup.prettify()
 
 
-def get_filings_url(soup: BeautifulSoup) -> str:
-    download_element = get_filings_download_element(soup, "13F-HR", "holdings")
+def get_filings_url(cik: str) -> Optional[str]:
+    submission_url = f"https://data.sec.gov/submissions/CIK{cik}.json"
+    submissions_response = requests.get(submission_url)
+    logger.debug(f"{submissions_response=}")
     try:
-        return "http://www.sec.gov" + download_element["href"]
-    except (TypeError, KeyError):
-        raise RuntimeError(f"no filings found")
+        payload = json.loads(submissions_response.text)
+    except JSONDecodeError:
+        return
+    logger.debug(f"{payload=}")
+    try:
+        response_cik = payload["cik"]
+        first_accession_number_formatted = payload["filings"]["recent"][
+            "accessionNumber"
+        ][0]
+        accession_number = first_accession_number_formatted.replace("-", "")
+        path = f"Archives/edgar/data/{response_cik}/{accession_number}/{first_accession_number_formatted}-index.htm"
+        return f"https://www.sec.gov/{path}"
+    except KeyError:
+        pass
