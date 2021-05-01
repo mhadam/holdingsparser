@@ -6,7 +6,10 @@ from json import JSONDecodeError
 from typing import Iterable, Optional
 
 import requests
+import untangle
 from bs4 import BeautifulSoup, PageElement, Tag
+
+from holdingsparser.file import Holding, VotingAuthority, ShrsOrPrnAmt
 
 logger = logging.getLogger(__name__)
 
@@ -68,20 +71,30 @@ def find_holdings_document_url(soup: BeautifulSoup) -> Optional[str]:
         raise RuntimeError("failed to find holdings document URL")
 
 
-def get_cleaned_information_table(soup: BeautifulSoup) -> str:
-    # remove xmlns attribute
-    information_table_re = re.compile("informationtable", re.I)
-    soup.find(information_table_re).attrs = {}
-
-    # remove namespace from all elements
-    namespace_re = re.compile(r"^.+:.+$", re.I)
-    tag_name_re = re.compile(r"^.+:(.+)$", re.I)
-
-    for tag in soup.find_all(namespace_re):
-        tag.name = tag_name_re.match(tag.name).group(1)
-
-    information_table_soup = soup.find("informationtable")
-    return information_table_soup.prettify()
+def get_holdings(payload: str) -> Iterable[Holding]:
+    o = untangle.parse(payload)
+    information_table = o.informationTable.children
+    for table in information_table:
+        voting_authority_element = table.votingAuthority
+        none_value = int(getattr(voting_authority_element, "None").cdata)
+        voting_authority = VotingAuthority(
+            sole=int(voting_authority_element.Sole.cdata),
+            shared=int(voting_authority_element.Shared.cdata),
+            none=none_value,
+        )
+        shrs_or_prn_amt = ShrsOrPrnAmt(
+            amt=int(table.shrsOrPrnAmt.sshPrnamt.cdata),
+            amt_type=table.shrsOrPrnAmt.sshPrnamtType.cdata,
+        )
+        yield Holding(
+            name_of_issuer=table.nameOfIssuer.cdata,
+            title_of_class=table.titleOfClass.cdata,
+            cusip=table.cusip.cdata,
+            value=int(table.value.cdata),
+            shrs_or_prn_amt=shrs_or_prn_amt,
+            investment_discretion=table.investmentDiscretion.cdata,
+            voting_authority=voting_authority,
+        )
 
 
 def get_filings_url(cik: str) -> Optional[str]:
