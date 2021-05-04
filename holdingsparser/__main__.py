@@ -24,16 +24,13 @@ def configure_logging(verbose: int):
     )
 
 
-class Format(str, Enum):
-    CSV = "csv"
-    TSV = "tsv"
-
-
 @app.command()  # only entrypoint for Typer now
 def main_command(
     term: str = typer.Argument(..., help="Name, ticker or CIK"),
     verbose: int = typer.Option(0, "--verbose", "-v", count=True),
-    format_: Format = typer.Option(Format.CSV, "--format", "-f", case_sensitive=False),
+    delimiter: str = typer.Option(
+        ",", "--delimiter", "-d", help="Delimiter used between values"
+    ),
     path: Optional[Path] = typer.Option(
         None, "--output", "-o", help="Path of directory to write output file"
     ),
@@ -41,12 +38,13 @@ def main_command(
     if verbose > 0:
         configure_logging(verbose)
     logger.debug(f"{verbose=}")
-    if format_ == Format.CSV:
-        delimiter = ","
-    elif format_ == Format.TSV:
+    if delimiter == ",":
+        file_format = "csv"
+    elif delimiter == r"\t":
+        file_format = "tsv"
         delimiter = "\t"
     else:
-        raise RuntimeError(f"{format_} is not a valid delimiter")
+        file_format = "dsv"
     if path:
         if not path.exists():
             raise RuntimeError(f"{path} does not exist")
@@ -68,9 +66,7 @@ def main_command(
         for row in output_rows_stream:
             w.writerow(row)
         print(result.getvalue(), end="")
-        with open(
-            save_path / f"{term}_holdings.{format_.value.lower()}", "w"
-        ) as dsvfile:
+        with open(save_path / f"{term}_holdings.{file_format.lower()}", "w") as dsvfile:
             result.seek(0)
             shutil.copyfileobj(result, dsvfile)
     except RuntimeError as e:

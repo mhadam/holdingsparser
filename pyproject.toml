@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "holdingsparser"
-version = "0.1.0-alpha.20"
+version = "0.1.0-alpha.22"
 description = "A program that parses 13F reports filed with the SEC."
 authors = ["mhadam <michael@hadam.us>"]
 repository = "https://github.com/mhadam/holdingsparser"
