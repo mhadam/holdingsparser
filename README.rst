@@ -27,7 +27,7 @@ From `investor.gov`_ (educational website from the SEC):
 
     An institutional investment manager that uses the U.S. mail (or other means or instrumentality of interstate commerce) in the course of its business, and exercises investment discretion over $100 million or more in Section 13(f) securities (explained below) must report its holdings quarterly on Form 13F with the Securities and Exchange Commission (SEC).
 
-``holdingsparser`` fetches 13-F filings from `EDGAR`_ and outputs the holding entries in a TSV file.
+``holdingsparser`` fetches 13-F filings from `EDGAR`_ and outputs the holding entries in a `DSV`_ file.
 
 Quick start
 ===========
@@ -44,13 +44,15 @@ Upgrade the package:
 
     pip install --user --pre -U holdingsparser
 
-Search for a filing with the CIK:
+Search for a filing with the CIK and output a file delimited with tabs named ``holdings.tsv``:
 
 .. code-block:: console
 
-    holdingsparser 0001166559
+    holdingsparser 0001166559 -d "\t" -o ./holdings.tsv
 
-Alternatively:
+Leaving out the ``-o`` option, a file will be written in the current working directory named ``CIK_holdings.FILE_EXTENSION``.
+
+Alternatively, invoke the program as a module:
 
 .. code-block:: console
 
@@ -58,3 +60,4 @@ Alternatively:
 
 .. _investor.gov: https://www.investor.gov/introduction-investing/investing-basics/glossary/form-13f-reports-filed-institutional-investment
 .. _EDGAR: https://www.sec.gov/edgar/searchedgar/companysearch.html
+.. _DSV: https://en.wikipedia.org/wiki/Delimiter-separated_values
