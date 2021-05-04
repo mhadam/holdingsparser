@@ -19,7 +19,7 @@ class VotingAuthority:
 @unique
 class OptionType(Enum):
     PUT = auto()
-    Call = auto()
+    CALL = auto()
 
 
 @dataclass

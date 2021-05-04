@@ -3,7 +3,7 @@ import dataclasses
 import logging
 import shutil
 from io import StringIO
-from typing import Mapping
+from typing import Mapping, Iterable, Iterator
 
 import requests
 
@@ -26,7 +26,7 @@ def camelcase(value: str) -> str:
     return "".join(x for x in value.title() if x.isalpha())
 
 
-def get_tsv_line(holding: Holding) -> Mapping:
+def get_row_mapping(holding: Holding) -> Mapping:
     result = {}
     for k, v in dataclasses.asdict(holding).items():
         if isinstance(v, dict):
@@ -50,7 +50,7 @@ def get_tsv_line(holding: Holding) -> Mapping:
     return {camelcase(k): v for (k, v) in replaced.items()}
 
 
-def search(term: str):
+def search(term: str) -> Iterable[Holding]:
     # find 13F-HR filings
     filings_url = get_filings_url(term)
     logger.info(f"filings url is {filings_url}")
@@ -64,12 +64,16 @@ def search(term: str):
 
     # retrieve holdings document and transform to TSV
     holdings_document = requests.get(holdings_document_url)
-    holdings = get_holdings(holdings_document.text)
-    holdings_list = list(holdings)
+    return get_holdings(holdings_document.text)
 
-    # write TSV file
-    result = StringIO()
-    first_line = get_tsv_line(holdings_list[0])
+
+def get_output_rows(holdings: Iterable[Holding]) -> Iterator[Mapping]:
+    """
+    :param holdings: Holdings
+    :return: Stream of header, and then lines
+    """
+    holdings_list = list(holdings)
+    first_line = get_row_mapping(holdings_list[0])
     arbitrary_order = [
         "Name",
         "TitleOfClass",
@@ -83,14 +87,5 @@ def search(term: str):
         "VotingAuthorityNone",
     ]
     order = dict((key, idx) for idx, key in enumerate(arbitrary_order))
-    column_names = sorted(first_line, key=order.get)
-    w = csv.DictWriter(result, column_names, delimiter="\t")
-    w.writeheader()
-    for holding in holdings_list:
-        line = get_tsv_line(holding)
-        w.writerow(line)
-    print(result.getvalue(), end="")
-
-    with open(f"{term}_holdings.tsv", "w") as tsvfile:
-        result.seek(0)
-        shutil.copyfileobj(result, tsvfile)
+    yield sorted(first_line, key=order.get)
+    yield from (get_row_mapping(holding) for holding in holdings_list)
