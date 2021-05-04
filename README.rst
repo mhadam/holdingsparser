@@ -27,7 +27,7 @@ From `investor.gov`_ (educational website from the SEC):
 
     An institutional investment manager that uses the U.S. mail (or other means or instrumentality of interstate commerce) in the course of its business, and exercises investment discretion over $100 million or more in Section 13(f) securities (explained below) must report its holdings quarterly on Form 13F with the Securities and Exchange Commission (SEC).
 
-``holdingsparser`` fetches 13-F filings from `EDGAR`_ and outputs the holding entries in a `DSV`_ file.
+``holdingsparser`` fetches `13F`_ filings from `EDGAR`_ and outputs the holding entries in a `DSV`_ file.
 
 Quick start
 ===========
@@ -61,3 +61,4 @@ Alternatively, invoke the program as a module:
 .. _investor.gov: https://www.investor.gov/introduction-investing/investing-basics/glossary/form-13f-reports-filed-institutional-investment
 .. _EDGAR: https://www.sec.gov/edgar/searchedgar/companysearch.html
 .. _DSV: https://en.wikipedia.org/wiki/Delimiter-separated_values
+.. _13F: https://en.wikipedia.org/wiki/Form_13F
