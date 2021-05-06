@@ -3,7 +3,7 @@ import logging
 import re
 from itertools import chain
 from json import JSONDecodeError
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Mapping
 
 import requests
 import untangle
@@ -97,7 +97,16 @@ def get_holdings(payload: str) -> Iterable[Holding]:
         )
 
 
+def get_first_13f(payload: Mapping):
+    recent = payload["filings"]["recent"]
+    zipped = zip(recent["accessionNumber"], recent["form"])
+    return next(x[0] for x in zipped if x[1] == "13F-HR")
+
+
 def get_filings_url(cik: str) -> Optional[str]:
+    logger.info(
+        f"searching for filing at https://data.sec.gov/submissions/CIK{cik}.json"
+    )
     submission_url = f"https://data.sec.gov/submissions/CIK{cik}.json"
     submissions_response = requests.get(submission_url)
     logger.debug(f"{submissions_response=}")
@@ -108,9 +117,7 @@ def get_filings_url(cik: str) -> Optional[str]:
     logger.debug(f"{payload=}")
     try:
         response_cik = payload["cik"]
-        first_accession_number_formatted = payload["filings"]["recent"][
-            "accessionNumber"
-        ][0]
+        first_accession_number_formatted = get_first_13f(payload)
         accession_number = first_accession_number_formatted.replace("-", "")
         path = f"Archives/edgar/data/{response_cik}/{accession_number}/{first_accession_number_formatted}-index.htm"
         return f"https://www.sec.gov/{path}"

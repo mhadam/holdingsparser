@@ -4,9 +4,17 @@ import requests
 import requests_random_user_agent
 import untangle
 
-from holdingsparser.application import get_tsv_line
+from holdingsparser.application import get_row_mapping
 from holdingsparser.file import Holding, ShrsOrPrnAmt, VotingAuthority
 from holdingsparser.scrape import get_filings_url, get_holdings
+
+
+def test_get_filings_url():
+    result = get_filings_url("0001166559")
+    assert (
+        result
+        == "https://www.sec.gov/Archives/edgar/data/1166559/000110465921021959/0001104659-21-021959-index.htm"
+    )
 
 
 def test_get_filings_url_missing():
@@ -53,7 +61,7 @@ def test_get_line():
         voting_authority=VotingAuthority(sole=21554, shared=0, none=0),
     )
 
-    result = get_tsv_line(holding)
+    result = get_row_mapping(holding)
 
     assert result == {
         "Cusip": "02079K305",
