@@ -46,13 +46,12 @@ def main_command(
     else:
         file_format = "dsv"
     if path:
-        if not path.exists():
-            raise RuntimeError(f"{path} does not exist")
         if not path.is_dir():
-            raise RuntimeError(f"{path} is not a directory")
-        save_path = path
+            save_path = path
+        else:
+            save_path = path / f"{term}_holdings.{file_format.lower()}"
     else:
-        save_path = Path.cwd()
+        save_path = Path.cwd() / f"{term}_holdings.{file_format.lower()}"
     try:
         holding_stream = search(term)
         output_rows_stream = get_output_rows(holding_stream)
@@ -66,7 +65,7 @@ def main_command(
         for row in output_rows_stream:
             w.writerow(row)
         print(result.getvalue(), end="")
-        with open(save_path / f"{term}_holdings.{file_format.lower()}", "w") as dsvfile:
+        with open(save_path, "w") as dsvfile:
             result.seek(0)
             shutil.copyfileobj(result, dsvfile)
     except RuntimeError as e:
