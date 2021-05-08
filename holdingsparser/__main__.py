@@ -10,7 +10,12 @@ from typing import Optional
 import typer
 import requests_random_user_agent  # NOTE: this enables random user agents
 
-from holdingsparser.application import search, get_output_rows
+from holdingsparser.application import (
+    search,
+    get_output_rows,
+    get_save_path,
+    get_file_format,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,20 +43,12 @@ def main_command(
     if verbose > 0:
         configure_logging(verbose)
     logger.debug(f"{verbose=}")
-    if delimiter == ",":
-        file_format = "csv"
-    elif delimiter == r"\t":
-        file_format = "tsv"
+
+    file_format = get_file_format(delimiter)
+    if delimiter == r"\t":
         delimiter = "\t"
-    else:
-        file_format = "dsv"
-    if path:
-        if not path.is_dir():
-            save_path = path
-        else:
-            save_path = path / f"{term}_holdings.{file_format.lower()}"
-    else:
-        save_path = Path.cwd() / f"{term}_holdings.{file_format.lower()}"
+    save_path = get_save_path(path, term, file_format)
+
     try:
         holding_stream = search(term)
         output_rows_stream = get_output_rows(holding_stream)
