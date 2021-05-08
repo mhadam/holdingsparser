@@ -1,8 +1,6 @@
-import csv
 import dataclasses
 import logging
-import shutil
-from io import StringIO
+from pathlib import Path
 from typing import Mapping, Iterable, Iterator
 
 import requests
@@ -89,3 +87,24 @@ def get_output_rows(holdings: Iterable[Holding]) -> Iterator[Mapping]:
     order = dict((key, idx) for idx, key in enumerate(arbitrary_order))
     yield sorted(first_line, key=order.get)
     yield from (get_row_mapping(holding) for holding in holdings_list)
+
+
+def get_save_path(path: Path, term: str, file_format: str) -> Path:
+    if path:
+        if path.is_dir():
+            return path / f"{term}_holdings.{file_format.lower()}"
+        elif path.parent.is_dir():
+            return path
+        else:
+            raise RuntimeError(f"{path} is an invalid path")
+    else:
+        return Path.cwd() / f"{term}_holdings.{file_format.lower()}"
+
+
+def get_file_format(delimiter: str) -> str:
+    if delimiter == ",":
+        return "csv"
+    elif delimiter == r"\t":
+        return "tsv"
+    else:
+        return "dsv"

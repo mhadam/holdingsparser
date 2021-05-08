@@ -10,7 +10,12 @@ from typing import Optional
 import typer
 import requests_random_user_agent  # NOTE: this enables random user agents
 
-from holdingsparser.application import search, get_output_rows
+from holdingsparser.application import (
+    search,
+    get_output_rows,
+    get_save_path,
+    get_file_format,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,21 +43,12 @@ def main_command(
     if verbose > 0:
         configure_logging(verbose)
     logger.debug(f"{verbose=}")
-    if delimiter == ",":
-        file_format = "csv"
-    elif delimiter == r"\t":
-        file_format = "tsv"
+
+    file_format = get_file_format(delimiter)
+    if delimiter == r"\t":
         delimiter = "\t"
-    else:
-        file_format = "dsv"
-    if path:
-        if not path.exists():
-            raise RuntimeError(f"{path} does not exist")
-        if not path.is_dir():
-            raise RuntimeError(f"{path} is not a directory")
-        save_path = path
-    else:
-        save_path = Path.cwd()
+    save_path = get_save_path(path, term, file_format)
+
     try:
         holding_stream = search(term)
         output_rows_stream = get_output_rows(holding_stream)
@@ -66,7 +62,7 @@ def main_command(
         for row in output_rows_stream:
             w.writerow(row)
         print(result.getvalue(), end="")
-        with open(save_path / f"{term}_holdings.{file_format.lower()}", "w") as dsvfile:
+        with open(save_path, "w") as dsvfile:
             result.seek(0)
             shutil.copyfileobj(result, dsvfile)
     except RuntimeError as e:
